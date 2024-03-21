@@ -34,7 +34,7 @@ class LetterState(enum.StrEnum):
 class Wordle:
     def __init__(self, correct: None | str = None):
         self._valid_guesses = set(_load_word_list('valid-wordle-list.txt'))
-        self.guesses_left = 6  # 6
+        self.guesses_left = 20  # 6
 
         if correct is None:
             self._correct = random.choice(_load_word_list('todays-wordle-candidate.txt'))
@@ -60,6 +60,12 @@ class Wordle:
             print(l + guess[i] + ANSI_RESET, end='')
         print()
 
+        for l in out:
+            if l != LetterState.CORRECT:
+                break
+        else:
+            raise WordleFullException()
+
         return out
 
     def _rate_guess(self, guess: str) -> list[LetterState]:
@@ -69,19 +75,14 @@ class Wordle:
 
         out = []
 
-        wrong = False
         for i in range(5):
             if self._correct[i] == guess[i].lower():
                 out.append(LetterState.CORRECT)
             elif guess[i].lower() in self._correct:
                 out.append(LetterState.INCLUDE)
-                wrong = True
             else:
                 out.append(LetterState.NONE)
-                wrong = True
 
-        if not wrong:
-            self.guesses_left = 0
         return out
 
 
