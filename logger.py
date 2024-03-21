@@ -75,7 +75,7 @@ class Logger:
 
         if colors:
             res = res.replace("$reset", "\033[0m")  # reset color
-            res = res.replace("$color", self.color_mappings[type + 2]) # color based on type, e.g. "\033[33m" (represents yellow), here its +2 because indexes 0, 1 is used for other color
+            res = res.replace("$color", self.color_mappings[type + 1]) # color based on type, e.g. "\033[33m" (represents yellow), here its +2 because indexes 0, 1 is used for other color
             res = res.replace("$timecolor", self.color_mappings[0])
             res = res.replace("$tracecolor", self.color_mappings[1])
         else:

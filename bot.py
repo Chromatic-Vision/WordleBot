@@ -1,4 +1,4 @@
-from wordle import Wordle, LetterState, WordleFullException
+from wordle import Wordle, LetterState
 import logger
 
 logger = logger.Logger(True,
@@ -19,9 +19,6 @@ def _load_word_list(filename: str) -> list[str]:
     return out
 
 
-Guess = tuple[str, list[LetterState]]
-
-
 class WordleBot:
     def __init__(self):
         self.valid_words = _load_word_list('valid-wordle-list.txt')
@@ -34,47 +31,68 @@ class WordleBot:
         guesses = [(FIRST, wordle.guess(FIRST))]
 
         logger.log(f'First guess "{FIRST}" done')
-        try:
-            while True:
-                if guesses[-1][0] in guess_words:
-                    guess_words.remove(guesses[-1][0])
-                if guesses[-1][0] in valid_words:
-                    valid_words.remove(guesses[-1][0])
-                guess_words = self.possible_words(guess_words, guesses[-1])
-                valid_words = self.possible_words(valid_words, guesses[-1])
 
-                if len(guess_words) == 0:
-                    wordle.guess(guess_words[-1])
-                else:
-                    highest_removed_score = None
-                    highest_removed = None
-                    for word in guess_words:
-                        score = self.helps_words(word, guess_words)
-                        if highest_removed_score is None or score > highest_removed_score:
-                            highest_removed_score = score
-                            highest_removed = word
-                    # print('best:', highest_removed)
-                    if highest_removed is None:
-                        raise NotImplementedError
-                    guesses.append((highest_removed, wordle.guess(highest_removed)))
-                    logger.log('guess_words:', str(len(guess_words)).rjust(5, ' '), guess_words)
-        except WordleFullException:
-            return
+        b = 0
 
-    def possible_words(self, possible: list[str], _guess: Guess) -> list[str]:
+        while wordle.guesses_left > 0:
+
+            if guesses[-1][0] in guess_words:
+                guess_words.remove(guesses[-1][0])
+            if guesses[-1][0] in valid_words:
+                valid_words.remove(guesses[-1][0])
+
+            # print("before", guess_words.__len__())
+
+            guess_words = self.possible_words(guess_words, guesses[-1])
+            valid_words = self.possible_words(valid_words, guesses[-1])
+
+            # print("after", guess_words.__len__())
+
+            logger.log(f'{len(guess_words)} remaining:', guess_words)
+
+            print()
+
+            highest_removed_score = None
+            highest_removed = None
+
+            for word in guess_words:
+                score = len(self.helps_words(word, valid_words))
+
+                if highest_removed_score is None or score > highest_removed_score:
+
+                    highest_removed_score = score
+                    highest_removed = word
+
+            b += 1
+
+            # print('best:', highest_removed)
+            #
+            # logger.log("Guessing", highest_removed)
+
+            if highest_removed is None:
+                raise NotImplementedError
+            guesses.append((highest_removed, wordle.guess(highest_removed)))
+
+        return b
+
+    def possible_words(self, possible: list[str], _guess: tuple[str, list[LetterState]]) -> list[str]:
         # possible = possible.copy()
         # print('possible words:', possible)
         out = []
         for word in possible:
             guess, state = _guess
             for i in range(5):
-                s = state[guess.find(word[i])]
-                if word[i] in guess and s == LetterState.NONE:
-                    # print('skipped', word)
+
+                letter = word[i]
+                s = state[guess.find(letter)]
+
+                if letter in guess and s == LetterState.NONE: # als een letter in een guess zit waarvan dat fout is
                     break
-                if word[i] == guess[i] and state[i] == LetterState.INCLUDE:
+
+                if letter == guess[i] and state[i] == LetterState.INCLUDE:
                     break
-                if word[i] != guess[i] and state[i] == LetterState.CORRECT:
+
+                if state[i] == LetterState.CORRECT and guess[i] is not letter:
                     break
 
             else:
@@ -82,26 +100,19 @@ class WordleBot:
 
         return out
 
-    def helps_words(self, guess: str, words: list[str]) -> int:
-        out = 0
+    def helps_words(self, guess: str, words: list[str]) -> list[str]: # TODO: ??
+        out = []
         for word in words:
             for letter in guess:
                 if letter in word:
-                    out += 1
+                    out.append(word)
                     break
 
         return out
+
 
 
 if __name__ == '__main__':
     wordle = Wordle()
     bot = WordleBot()
     bot.solve(wordle)
-
-    def _log(v):
-        print(v)
-        return v
-
-    assert 'expel' not in _log(bot.possible_words(['expel'], ('blimp',
-                                                         [LetterState.CORRECT, LetterState.CORRECT,
-                                                          LetterState.NONE, LetterState.NONE, LetterState.CORRECT])))

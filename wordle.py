@@ -60,12 +60,6 @@ class Wordle:
             print(l + guess[i] + ANSI_RESET, end='')
         print()
 
-        for l in out:
-            if l != LetterState.CORRECT:
-                break
-        else:
-            raise WordleFullException()
-
         return out
 
     def _rate_guess(self, guess: str) -> list[LetterState]:
@@ -75,14 +69,20 @@ class Wordle:
 
         out = []
 
+        wrong = False
         for i in range(5):
             if self._correct[i] == guess[i].lower():
                 out.append(LetterState.CORRECT)
             elif guess[i].lower() in self._correct:
                 out.append(LetterState.INCLUDE)
+                wrong = True
             else:
                 out.append(LetterState.NONE)
+                wrong = True
 
+        if not wrong:
+            print(f"You've cleared the wordle with {self.guesses_left} guesses remaining!")
+            self.guesses_left = 0
         return out
 
 
