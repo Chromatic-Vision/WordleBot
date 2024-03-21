@@ -1,4 +1,10 @@
 from wordle import Wordle, LetterState
+import logger
+
+logger = logger.Logger(True,
+                       False,
+                       "$color[$info]$reset $timecolor[%H:%M:%S.%f]$reset $message $tracecolor($filename/$funcname:$line)$reset")
+logger.reset_log()
 
 FIRST = 'crane'
 
@@ -24,6 +30,8 @@ class WordleBot:
 
         guesses = [(FIRST, wordle.guess(FIRST))]
 
+        logger.log(f'First guess "{FIRST}" done')
+
         while wordle.guesses_left > 0:
             if guesses[-1][0] in guess_words:
                 guess_words.remove(guesses[-1][0])
@@ -43,7 +51,7 @@ class WordleBot:
             if highest_removed is None:
                 raise NotImplementedError
             guesses.append((highest_removed, wordle.guess(highest_removed)))
-            print('guess_words:', guess_words)
+            logger.log(f'{len(guess_words)} remaining:', guess_words)
 
     def possible_words(self, possible: list[str], _guess: tuple[str, list[LetterState]]) -> list[str]:
         # possible = possible.copy()
