@@ -34,12 +34,14 @@ class LetterState(enum.StrEnum):
 class Wordle:
     def __init__(self, correct: None | str = None):
         self._valid_guesses = set(_load_word_list('valid-wordle-list.txt'))
-        self.guesses_left = 20  # 6
+        self.guesses_left = 6  # 6
 
         if correct is None:
             self._correct = random.choice(_load_word_list('todays-wordle-candidate.txt'))
         else:
             self._correct = correct
+
+        # self._correct = "decay"
 
         print('wordle correct answer:', self._correct)
         # self._correct = 'boris'

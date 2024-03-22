@@ -32,8 +32,6 @@ class WordleBot:
 
         logger.log(f'First guess "{FIRST}" done')
 
-        b = 0
-
         while wordle.guesses_left > 0:
 
             if guesses[-1][0] in guess_words:
@@ -41,12 +39,8 @@ class WordleBot:
             if guesses[-1][0] in valid_words:
                 valid_words.remove(guesses[-1][0])
 
-            # print("before", guess_words.__len__())
-
             guess_words = self.possible_words(guess_words, guesses[-1])
             valid_words = self.possible_words(valid_words, guesses[-1])
-
-            # print("after", guess_words.__len__())
 
             logger.log(f'{len(guess_words)} remaining:', guess_words)
 
@@ -56,24 +50,17 @@ class WordleBot:
             highest_removed = None
 
             for word in guess_words:
-                score = len(self.helps_words(word, valid_words))
+                score = len(self.helps_words(word, guess_words))
 
                 if highest_removed_score is None or score > highest_removed_score:
 
                     highest_removed_score = score
                     highest_removed = word
 
-            b += 1
-
-            # print('best:', highest_removed)
-            #
-            # logger.log("Guessing", highest_removed)
-
             if highest_removed is None:
                 raise NotImplementedError
-            guesses.append((highest_removed, wordle.guess(highest_removed)))
 
-        return b
+            guesses.append((highest_removed, wordle.guess(highest_removed)))
 
     def possible_words(self, possible: list[str], _guess: tuple[str, list[LetterState]]) -> list[str]:
         # possible = possible.copy()
@@ -89,7 +76,10 @@ class WordleBot:
                 if letter in guess and s == LetterState.NONE: # als een letter in een guess zit waarvan dat fout is
                     break
 
-                if letter == guess[i] and state[i] == LetterState.INCLUDE:
+                if state[i] == LetterState.INCLUDE and letter == guess[i]:
+                    break
+
+                if state[i] == LetterState.INCLUDE and guess[i] not in word:
                     break
 
                 if state[i] == LetterState.CORRECT and guess[i] is not letter:
