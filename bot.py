@@ -1,4 +1,4 @@
-from wordle import Wordle, LetterState
+from wordle import Wordle, LetterState, WordleFullException
 import logger
 
 logger = logger.Logger(True,
@@ -32,35 +32,38 @@ class WordleBot:
 
         logger.log(f'First guess "{FIRST}" done')
 
-        while wordle.guesses_left > 0:
+        try:
+            while True:
 
-            if guesses[-1][0] in guess_words:
-                guess_words.remove(guesses[-1][0])
-            if guesses[-1][0] in valid_words:
-                valid_words.remove(guesses[-1][0])
+                if guesses[-1][0] in guess_words:
+                    guess_words.remove(guesses[-1][0])
+                if guesses[-1][0] in valid_words:
+                    valid_words.remove(guesses[-1][0])
 
-            guess_words = self.possible_words(guess_words, guesses[-1])
-            valid_words = self.possible_words(valid_words, guesses[-1])
+                guess_words = self.possible_words(guess_words, guesses[-1])
+                valid_words = self.possible_words(valid_words, guesses[-1])
 
-            logger.log(f'{len(guess_words)} remaining:', guess_words)
+                logger.log(f'{len(guess_words)} remaining:', guess_words)
 
-            print()
+                print()
 
-            highest_removed_score = None
-            highest_removed = None
+                highest_removed_score = None
+                highest_removed = None
 
-            for word in guess_words:
-                score = len(self.helps_words(word, guess_words))
+                for word in guess_words:
+                    score = len(self.helps_words(word, guess_words))
 
-                if highest_removed_score is None or score > highest_removed_score:
+                    if highest_removed_score is None or score > highest_removed_score:
 
-                    highest_removed_score = score
-                    highest_removed = word
+                        highest_removed_score = score
+                        highest_removed = word
 
-            if highest_removed is None:
-                raise NotImplementedError
+                if highest_removed is None:
+                    raise NotImplementedError
 
-            guesses.append((highest_removed, wordle.guess(highest_removed)))
+                guesses.append((highest_removed, wordle.guess(highest_removed)))
+        except WordleFullException:
+            pass
 
     def possible_words(self, possible: list[str], _guess: tuple[str, list[LetterState]]) -> list[str]:
         # possible = possible.copy()

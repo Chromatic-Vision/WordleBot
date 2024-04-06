@@ -34,7 +34,7 @@ class LetterState(enum.StrEnum):
 class Wordle:
     def __init__(self, correct: None | str = None):
         self._valid_guesses = set(_load_word_list('valid-wordle-list.txt'))
-        self.guesses_left = 6  # 6
+        self.guesses_left = 20  # 6
 
         if correct is None:
             self._correct = random.choice(_load_word_list('todays-wordle-candidate.txt'))
@@ -84,7 +84,7 @@ class Wordle:
 
         if not wrong:
             print(f"You've cleared the wordle with {self.guesses_left} guesses remaining!")
-            self.guesses_left = 0
+            raise WordleFullException()
         return out
 
 
