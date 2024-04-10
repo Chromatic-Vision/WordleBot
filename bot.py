@@ -1,4 +1,5 @@
-from wordle import Wordle, LetterState, WordleFullException
+from wordle import Wordle, LetterState, WordleFullException, ANSI_RESET
+import reverse
 import logger
 
 logger = logger.Logger(True,
@@ -93,19 +94,32 @@ class WordleBot:
 
         return out
 
-    def helps_words(self, guess: str, words: list[str]) -> list[str]: # TODO: ??
+    def helps_words(self, guess: str, words: list[str]) -> list[str]:  # TODO: ??
+
         out = []
+
+        best = "boris"
+
         for word in words:
-            for letter in guess:
-                if letter in word:
-                    out.append(word)
-                    break
+
+
+
+            for i in range(3**5):
+                new_state = [[LetterState.NONE, LetterState.INCLUDE, LetterState.CORRECT][i // ((j * 3) or 1) % 3] for j in range(5)]
+                print(' '.join(new_state) + ANSI_RESET)
+
+                r = reverse.possible_words(words, new_state, word)
+
+
+        # for word in words:
+        #     a = reverse.possible_words(words, [], guess)
 
         return out
 
 
 
 if __name__ == '__main__':
-    wordle = Wordle()
+    wordle = Wordle("rower")
     bot = WordleBot()
-    bot.solve(wordle)
+    # bot.solve(wordle)
+    bot.helps_words(wordle._correct, bot.guess_words)

@@ -12,7 +12,7 @@ class WordleFullException(Exception):
     pass
 
 
-def _load_word_list(filename: str) -> list[str]:
+def load_word_list(filename: str) -> list[str]:
     out = []
     with open(filename, 'r', encoding='utf-8') as file:
         raw = file.read()
@@ -33,11 +33,11 @@ class LetterState(enum.StrEnum):
 
 class Wordle:
     def __init__(self, correct: None | str = None):
-        self._valid_guesses = set(_load_word_list('valid-wordle-list.txt'))
+        self._valid_guesses = set(load_word_list('valid-wordle-list.txt'))
         self.guesses_left = 20  # 6
 
         if correct is None:
-            self._correct = random.choice(_load_word_list('todays-wordle-candidate.txt'))
+            self._correct = random.choice(load_word_list('todays-wordle-candidate.txt'))
         else:
             self._correct = correct
 
