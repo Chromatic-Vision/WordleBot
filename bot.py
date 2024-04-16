@@ -102,8 +102,6 @@ class WordleBot:
 
         for word in words:
 
-
-
             for i in range(3**5):
                 new_state = [[LetterState.NONE, LetterState.INCLUDE, LetterState.CORRECT][i // ((j * 3) or 1) % 3] for j in range(5)]
                 print(' '.join(new_state) + ANSI_RESET)
