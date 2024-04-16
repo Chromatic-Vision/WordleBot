@@ -7,7 +7,7 @@ logger = logger.Logger(True,
                        "$color[$info]$reset $timecolor[%H:%M:%S.%f]$reset $message $tracecolor($filename/$funcname:$line)$reset")
 logger.reset_log()
 
-FIRST = 'crane'
+FIRST = 'trace'
 
 
 def _load_word_list(filename: str) -> list[str]:
@@ -48,21 +48,25 @@ class WordleBot:
 
                 print()
 
-                highest_removed_score = None
-                highest_removed = None
+                # highest_removed_score = None
+                # highest_removed = None
+                #
+                # for word in guess_words:
+                #     score = len(self.helps_words(word, guess_words))
+                #
+                #     if highest_removed_score is None or score > highest_removed_score:
+                #
+                #         highest_removed_score = score
+                #         highest_removed = word
+                #
+                # if highest_removed is None:
+                #     raise NotImplementedError
 
-                for word in guess_words:
-                    score = len(self.helps_words(word, guess_words))
+                _best = self.best_word(guess_words, _load_word_list('valid-wordle-list.txt'))
 
-                    if highest_removed_score is None or score > highest_removed_score:
+                print(_best)
+                guesses.append((_best, wordle.guess(_best)))
 
-                        highest_removed_score = score
-                        highest_removed = word
-
-                if highest_removed is None:
-                    raise NotImplementedError
-
-                guesses.append((highest_removed, wordle.guess(highest_removed)))
         except WordleFullException:
             pass
 
@@ -94,30 +98,47 @@ class WordleBot:
 
         return out
 
-    def helps_words(self, guess: str, words: list[str]) -> list[str]:  # TODO: ??
+    def helps_words(self, guess: str, words: list[str]) -> list[str]:
+        return None
 
-        out = []
 
-        best = "boris"
+    def best_word(self, guess_words: list[str], valid_words: list[str]) -> str:
 
-        for word in words:
+        best = None
+        best_rate = None
+
+        for j, word in enumerate(guess_words):
+            print(j, len(guess_words))
+
+            _set = {}
 
             for i in range(3**5):
+
                 new_state = [[LetterState.NONE, LetterState.INCLUDE, LetterState.CORRECT][i // ((j * 3) or 1) % 3] for j in range(5)]
-                print(' '.join(new_state) + ANSI_RESET)
+                # print(' '.join(new_state) + ANSI_RESET)
 
-                r = reverse.possible_words(words, new_state, word)
+                r = reverse.possible_words(valid_words, new_state, word)
 
+                if not r:
+                    continue
 
-        # for word in words:
-        #     a = reverse.possible_words(words, [], guess)
+                idx = r.__len__()
+                if idx not in _set:
+                    _set[idx] = 0
+                _set[idx] += 1
 
-        return out
+            if best is None or best_rate is None or best_rate < self._rate(_set):
+                best_rate = self._rate(_set)
+                best = word
 
+        return best
+
+    def _rate(self, _set):
+        return max(_set.values()) - min(_set.values())
 
 
 if __name__ == '__main__':
-    wordle = Wordle("rower")
+    wordle = Wordle("shank")
     bot = WordleBot()
-    # bot.solve(wordle)
-    bot.helps_words(wordle._correct, bot.guess_words)
+    bot.solve(wordle)
+    # bot.helps_words(wordle._correct, bot.guess_words)
