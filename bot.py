@@ -7,7 +7,7 @@ logger = logger.Logger(True,
                        "$color[$info]$reset $timecolor[%H:%M:%S.%f]$reset $message $tracecolor($filename/$funcname:$line)$reset")
 logger.reset_log()
 
-FIRST = 'crane'
+FIRST = 'trace'
 
 
 def _load_word_list(filename: str) -> list[str]:
@@ -98,9 +98,6 @@ class WordleBot:
 
         return out
 
-    def helps_words(self, guess: str, words: list[str]) -> list[str]:
-        return None
-
 
     def best_word(self, guess_words: list[str], valid_words: list[str]) -> str:
 
@@ -109,6 +106,8 @@ class WordleBot:
 
         for j, word in enumerate(guess_words):
             print(j, len(guess_words))
+            # if j > 5:
+            #     break
 
             _set = {}
 
@@ -143,7 +142,7 @@ class WordleBot:
 
 
 if __name__ == '__main__':
-    wordle = Wordle("stung")
+    wordle = Wordle("broth")
     bot = WordleBot()
     bot.solve(wordle)
     # bot.helps_words(wordle._correct, bot.guess_words)

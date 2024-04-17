@@ -19,6 +19,16 @@ def possible_words(possible: list[str], state: list[LetterState], correct: str) 
             ):
                 break
             if (
+                    state[i] == LetterState.INCLUDE
+                    and word[i] == correct[i]
+            ):
+                break
+            if (
+                    state[i] == LetterState.INCLUDE
+                    and correct[i] not in word
+            ):
+                break
+            if (
                     state[i] == LetterState.NONE
                     and word[i] in correct
             ):
