@@ -7,7 +7,7 @@ logger = logger.Logger(True,
                        "$color[$info]$reset $timecolor[%H:%M:%S.%f]$reset $message $tracecolor($filename/$funcname:$line)$reset")
 logger.reset_log()
 
-FIRST = 'trace'
+FIRST = 'crane'
 
 
 def _load_word_list(filename: str) -> list[str]:
@@ -34,7 +34,7 @@ class WordleBot:
         logger.log(f'First guess "{FIRST}" done')
 
         try:
-            while True:
+            while 1:
 
                 if guesses[-1][0] in guess_words:
                     guess_words.remove(guesses[-1][0])
@@ -134,11 +134,16 @@ class WordleBot:
         return best
 
     def _rate(self, _set):
-        return max(_set.values()) - min(_set.values())
+
+        # groepen moeten groter zijn
+        # de groep moet zo klein mogelijk zijn (grootste groep moet klein zijn)
+
+        # return max(_set.values()) - min(_set.values())
+        return max(_set.values()) ** 2 + len(_set)
 
 
 if __name__ == '__main__':
-    wordle = Wordle("shank")
+    wordle = Wordle("stung")
     bot = WordleBot()
     bot.solve(wordle)
     # bot.helps_words(wordle._correct, bot.guess_words)
