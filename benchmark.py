@@ -7,7 +7,7 @@ SCORE_MAX = 20
 
 time_start = time()
 performance = {}
-for i in range(100):
+for i in range(10):
     print(i)
     wordle = Wordle()
     start_guesses_left = wordle.guesses_left

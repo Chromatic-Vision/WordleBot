@@ -54,13 +54,19 @@ class Wordle:
         if len(guess) != 5 or guess not in self._valid_guesses:
             raise WordleInvalidWordException(f"Invalid guess: {guess}")
 
-        out = self._rate_guess(guess)
+        try:
+            out = self._rate_guess(guess)
 
-        self.guesses_left -= 1
+            self.guesses_left -= 1
 
-        for i, l in enumerate(out):
-            print(l + guess[i] + ANSI_RESET, end='')
-        print()
+            for i, l in enumerate(out):
+                print(l + guess[i] + ANSI_RESET, end='')
+            print()
+        except WordleFullException:
+            for c in self._correct:
+                print(LetterState.CORRECT + c + ANSI_RESET, end='')
+            print()
+            raise
 
         return out
 
