@@ -62,7 +62,7 @@ class Logger:
 
     def parse(self, format: str, message: str, colors: bool, type: int):
 
-        if type > 2:
+        if type > 3:
             raise ValueError(f"Unknown type: {type}")
 
         res = ""

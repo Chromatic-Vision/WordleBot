@@ -1,4 +1,5 @@
 import typing
+from itertools import product
 
 from wordle import Wordle, LetterState, WordleFullException, ANSI_RESET
 import reverse
@@ -64,6 +65,10 @@ class WordleBot:
                 # if highest_removed is None:
                 #     raise NotImplementedError
 
+                if len(over_words) == 1:
+                    wordle.guess(over_words[0])
+                    assert False
+
                 _best = self.best_word(over_words, _load_word_list('todays-wordle-candidate.txt'))
 
                 # print(_best)
@@ -106,16 +111,16 @@ class WordleBot:
         best_rate = None
 
         for j, word in enumerate(guess_words):
-            # print(j, len(guess_words))
+            print(j, len(guess_words))
 
             _set = {}
 
-            for i in range(3**5):
+            for new_state in list(product([LetterState.NONE, LetterState.INCLUDE, LetterState.CORRECT], repeat=5)):
 
-                new_state = [[LetterState.NONE, LetterState.INCLUDE, LetterState.CORRECT][i // ((j * 3) or 1) % 3] for j in range(5)]
                 # print(' '.join(new_state) + ANSI_RESET)
 
                 r = reverse.possible_words(over_words, new_state, word)
+                # print(ANSI_RESET + ' '.join(new_state) + " " + ANSI_RESET, word, r)
 
                 if not r:
                     continue
@@ -124,15 +129,18 @@ class WordleBot:
                 if idx not in _set:
                     _set[idx] = 0
                 _set[idx] += 1
-
-            rate = self._rate(_set)
-            # print("set", _set)
-            if rate is None:
+            if _set is None or _set == {}:
                 continue
-            if best is None or best_rate is None or best_rate < rate:
-                best_rate = rate
+            # print("set", _set)
+
+            if best_rate is None or best is None:
+                logger.error("Assigning", word, _set, "because best doesnt exist")
+
+            if best_rate is None or best is None or self._better(_set, best_rate):
+                best_rate = _set
                 best = word
 
+        logger.log("best is", best_rate)
         return best
 
     def _rate(self, _set: dict) -> typing.Optional[int]:
@@ -146,11 +154,23 @@ class WordleBot:
         return max(_set) ** 2 + len(_set)
 
     def _better(self, a, b): # a > b
-        pass
+
+        maxa = max(a.values())
+        suma = sum(a.values())
+
+        maxb = max(b.values())
+        sumb = sum(b.values())
+
+        if suma > sumb:
+            return True
+        elif suma == sumb:
+            return maxa < maxb
+        else:
+            return False
 
 
 if __name__ == '__main__':
-    wordle = Wordle("facet")
+    wordle = Wordle()
     bot = WordleBot()
     bot.solve(wordle)
     # bot.helps_words(wordle._correct, bot.guess_words)
