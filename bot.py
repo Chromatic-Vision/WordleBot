@@ -25,11 +25,11 @@ def _load_word_list(filename: str) -> list[str]:
 class WordleBot:
     def __init__(self):
         self.valid_words = _load_word_list('valid-wordle-list.txt')
-        self.guess_words = _load_word_list('todays-wordle-candidate.txt')
+        self.over_words = _load_word_list('todays-wordle-candidate.txt')
 
     def solve(self, wordle: Wordle):
         # valid_words = self.valid_words
-        guess_words = self.guess_words
+        over_words = self.over_words
 
         guesses = [(FIRST, wordle.guess(FIRST))]
 
@@ -38,15 +38,15 @@ class WordleBot:
         try:
             while 1:
 
-                if guesses[-1][0] in guess_words:
-                    guess_words.remove(guesses[-1][0])
+                if guesses[-1][0] in over_words:
+                    over_words.remove(guesses[-1][0])
                 # if guesses[-1][0] in valid_words:
                 #     valid_words.remove(guesses[-1][0])
 
-                guess_words = self.possible_words(guess_words, guesses[-1])
+                over_words = self.possible_words(over_words, guesses[-1])
                 # valid_words = self.possible_words(valid_words, guesses[-1])
 
-                logger.log(f'{len(guess_words)} remaining:', guess_words)
+                logger.log(f'{len(over_words)} remaining:', over_words)
 
                 print()
 
@@ -64,7 +64,7 @@ class WordleBot:
                 # if highest_removed is None:
                 #     raise NotImplementedError
 
-                _best = self.best_word(guess_words)
+                _best = self.best_word(over_words, _load_word_list('todays-wordle-candidate.txt'))
 
                 # print(_best)
                 guesses.append((_best, wordle.guess(_best)))
@@ -100,13 +100,13 @@ class WordleBot:
 
         return out
 
-    def best_word(self, guess_words: list[str]) -> str:
+    def best_word(self, over_words: list[str], guess_words: list[str]) -> str:
 
         best = None
         best_rate = None
 
         for j, word in enumerate(guess_words):
-            print(j, len(guess_words))
+            # print(j, len(guess_words))
 
             _set = {}
 
@@ -115,7 +115,7 @@ class WordleBot:
                 new_state = [[LetterState.NONE, LetterState.INCLUDE, LetterState.CORRECT][i // ((j * 3) or 1) % 3] for j in range(5)]
                 # print(' '.join(new_state) + ANSI_RESET)
 
-                r = reverse.possible_words(guess_words, new_state, word)
+                r = reverse.possible_words(over_words, new_state, word)
 
                 if not r:
                     continue
@@ -126,6 +126,7 @@ class WordleBot:
                 _set[idx] += 1
 
             rate = self._rate(_set)
+            # print("set", _set)
             if rate is None:
                 continue
             if best is None or best_rate is None or best_rate < rate:
@@ -144,9 +145,12 @@ class WordleBot:
         # return max(_set) - min(_set)
         return max(_set) ** 2 + len(_set)
 
+    def _better(self, a, b): # a > b
+        pass
+
 
 if __name__ == '__main__':
-    wordle = Wordle("shank")
+    wordle = Wordle("facet")
     bot = WordleBot()
     bot.solve(wordle)
     # bot.helps_words(wordle._correct, bot.guess_words)
