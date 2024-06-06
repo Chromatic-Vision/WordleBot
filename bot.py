@@ -110,8 +110,14 @@ class WordleBot:
         best = None
         best_rate = None
 
+        # for new_state in list(product([LetterState.NONE, LetterState.INCLUDE, LetterState.CORRECT], repeat=5)):
+        #     for s in new_state:
+        #         print(s + ' ', end=ANSI_RESET)
+        #     print()
+        # return
+
         for j, word in enumerate(guess_words):
-            print(j, len(guess_words))
+            print('\r', j, len(guess_words), end='')
 
             _set = {}
 
@@ -129,7 +135,7 @@ class WordleBot:
                 if idx not in _set:
                     _set[idx] = 0
                 _set[idx] += 1
-            if _set is None or _set == {}:
+            if _set == {}:
                 continue
             # print("set", _set)
 
@@ -153,7 +159,8 @@ class WordleBot:
         # return max(_set) - min(_set)
         return max(_set) ** 2 + len(_set)
 
-    def _better(self, a, b): # a > b
+    def _better(self, a: dict, b: dict):  # a > b
+        return len(a.values()) > len(b.values())
 
         maxa = max(a.values())
         suma = sum(a.values())
@@ -170,7 +177,7 @@ class WordleBot:
 
 
 if __name__ == '__main__':
-    wordle = Wordle()
+    wordle = Wordle('ether')
     bot = WordleBot()
     bot.solve(wordle)
     # bot.helps_words(wordle._correct, bot.guess_words)

@@ -56,6 +56,7 @@ class Wordle:
 
         try:
             out = self._rate_guess(guess)
+            print(out)
 
             self.guesses_left -= 1
 
@@ -75,18 +76,42 @@ class Wordle:
         if len(guess) != 5:
             raise WordleInvalidWordException('Guess length should always be 5')
 
-        out = []
+        out = [LetterState.NONE] * 5
+        print("out is ", out)
+        included_letters = {}
+
+        print(out)
 
         wrong = False
+
+        # correct
         for i in range(5):
+
             if self._correct[i] == guess[i].lower():
-                out.append(LetterState.CORRECT)
-            elif guess[i].lower() in self._correct:
-                out.append(LetterState.INCLUDE)
+                out[i] = LetterState.CORRECT
+
+                if guess[i].lower() not in included_letters:
+                    included_letters[guess[i].lower()] = 0
+
+                included_letters[guess[i].lower()] += 1
+
+        # include
+        for i in range(5):
+
+           if guess[i].lower() in self._correct:
+
+                if guess[i].lower() not in included_letters:
+                    included_letters[guess[i].lower()] = 0
+
+                if included_letters[guess[i].lower()] >= 0:
+                    # out[i] = LetterState.NONE
+                    included_letters[guess[i].lower()] -= 1
+                else:
+                    out[i] = LetterState.INCLUDE
+
+                included_letters[guess[i].lower()] += 1
                 wrong = True
-            else:
-                out.append(LetterState.NONE)
-                wrong = True
+
 
         if not wrong:
             print(f"You've cleared the wordle with {self.guesses_left} guesses remaining!")
@@ -102,11 +127,13 @@ if __name__ == '__main__':
     print(LetterState.NONE + 'S' + ANSI_RESET, end='')
     print('\n')
 
+    wordle = Wordle('raped')
+    assert wordle.guess('rotor') == [LetterState.CORRECT, LetterState.NONE, LetterState.NONE, LetterState.NONE, LetterState.NONE]
+    wordle = Wordle('grasp')
+    assert wordle.guess('rotor') == [LetterState.INCLUDE, LetterState.NONE, LetterState.NONE, LetterState.NONE,
+                                     LetterState.NONE]
+
     wordle = Wordle(correct=None)
-    # wordle.guess('adieu')
-    # wordle.guess('story')
-    # wordle.guess('iiiii')
-    # wordle.guess('boris')
 
     try:
         while True:
