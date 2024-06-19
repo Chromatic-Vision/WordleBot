@@ -1,0 +1,18 @@
+GRASP
+
+MUMMY -> PLUME
+
+je checkt bij correcte phase:
+
+- of het in de correcte spot zit.
+    als het wel zit:
+        gebruikte letter += 1
+    als het niet zit:
+        niks doen
+
+- of het in zit maar geen correcte spot zit.
+
+    als het wel zit:
+        gebruikte letter += 1
+    als het niet zit:
+        niks

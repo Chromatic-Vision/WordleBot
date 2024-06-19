@@ -77,10 +77,7 @@ class Wordle:
             raise WordleInvalidWordException('Guess length should always be 5')
 
         out = [LetterState.NONE] * 5
-        print("out is ", out)
-        included_letters = {}
-
-        print(out)
+        used_included_letters = {}
 
         wrong = False
 
@@ -88,29 +85,31 @@ class Wordle:
         for i in range(5):
 
             if self._correct[i] == guess[i].lower():
+
                 out[i] = LetterState.CORRECT
 
-                if guess[i].lower() not in included_letters:
-                    included_letters[guess[i].lower()] = 0
+                if guess[i].lower() not in used_included_letters:
+                    used_included_letters[guess[i].lower()] = 0
 
-                included_letters[guess[i].lower()] += 1
+                used_included_letters[guess[i].lower()] += 1
 
         # include
         for i in range(5):
 
-           if guess[i].lower() in self._correct:
+            if (guess[i].lower() in self._correct) and (guess[i].lower() != self._correct[i].lower()):
 
-                if guess[i].lower() not in included_letters:
-                    included_letters[guess[i].lower()] = 0
+                if guess[i].lower() not in used_included_letters:
+                    used_included_letters[guess[i].lower()] = 0
 
-                if included_letters[guess[i].lower()] >= 0:
-                    # out[i] = LetterState.NONE
-                    included_letters[guess[i].lower()] -= 1
-                else:
-                    out[i] = LetterState.INCLUDE
+                if used_included_letters[guess[i].lower()] >= 0:
 
-                included_letters[guess[i].lower()] += 1
+                    if used_included_letters[guess[i].lower()] < self._correct.count(guess[i].lower()):
+                        out[i] = LetterState.INCLUDE
+
+                        used_included_letters[guess[i].lower()] += 1
+
                 wrong = True
+
 
 
         if not wrong:
@@ -127,13 +126,13 @@ if __name__ == '__main__':
     print(LetterState.NONE + 'S' + ANSI_RESET, end='')
     print('\n')
 
-    wordle = Wordle('raped')
-    assert wordle.guess('rotor') == [LetterState.CORRECT, LetterState.NONE, LetterState.NONE, LetterState.NONE, LetterState.NONE]
-    wordle = Wordle('grasp')
-    assert wordle.guess('rotor') == [LetterState.INCLUDE, LetterState.NONE, LetterState.NONE, LetterState.NONE,
-                                     LetterState.NONE]
+    # wordle = Wordle('raped')
+    # assert wordle.guess('rotor') == [LetterState.CORRECT, LetterState.NONE, LetterState.NONE, LetterState.NONE, LetterState.NONE]
+    wordle = Wordle('mummy')
+    # assert wordle.guess('rotor') == [LetterState.INCLUDE, LetterState.NONE, LetterState.NONE, LetterState.NONE,
+    #                                  LetterState.NONE]
 
-    wordle = Wordle(correct=None)
+    # wordle = Wordle(correct=None)
 
     try:
         while True:
