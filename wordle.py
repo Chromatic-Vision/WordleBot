@@ -79,8 +79,6 @@ class Wordle:
         out = [LetterState.NONE] * 5
         used_included_letters = {}
 
-        wrong = False
-
         # correct
         for i in range(5):
 
@@ -108,13 +106,10 @@ class Wordle:
 
                         used_included_letters[guess[i].lower()] += 1
 
-                wrong = True
-
-
-
-        if not wrong:
+        if guess.lower() == self._correct:
             print(f"You've cleared the wordle with {self.guesses_left} guesses remaining!")
             raise WordleFullException()
+
         return out
 
 
@@ -126,11 +121,11 @@ if __name__ == '__main__':
     print(LetterState.NONE + 'S' + ANSI_RESET, end='')
     print('\n')
 
-    # wordle = Wordle('raped')
-    # assert wordle.guess('rotor') == [LetterState.CORRECT, LetterState.NONE, LetterState.NONE, LetterState.NONE, LetterState.NONE]
-    wordle = Wordle('mummy')
-    # assert wordle.guess('rotor') == [LetterState.INCLUDE, LetterState.NONE, LetterState.NONE, LetterState.NONE,
-    #                                  LetterState.NONE]
+    wordle = Wordle('raped')
+    assert wordle.guess('rotor') == [LetterState.CORRECT, LetterState.NONE, LetterState.NONE, LetterState.NONE, LetterState.NONE]
+    wordle = Wordle('grasp')
+    assert wordle.guess('rotor') == [LetterState.INCLUDE, LetterState.NONE, LetterState.NONE, LetterState.NONE,
+                                     LetterState.NONE]
 
     # wordle = Wordle(correct=None)
 
