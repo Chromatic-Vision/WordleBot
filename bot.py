@@ -1,7 +1,7 @@
 import typing
 from itertools import product
 
-from wordle import Wordle, LetterState, WordleFullException, ANSI_RESET
+from wordle import Wordle, LetterState, WordleFullException, ANSI_RESET, load_word_list
 import reverse
 import logger
 
@@ -13,22 +13,15 @@ logger.reset_log()
 FIRST = 'trace'
 
 
-def _load_word_list(filename: str) -> list[str]:
-    out = []
-    with open(filename, 'r', encoding='utf-8') as file:
-        raw = file.read()
-    for line in raw.split('\n'):
-        if line:
-            out.append(line)
-    return out
-
-
 class WordleBot:
     def __init__(self):
-        self.valid_words = _load_word_list('valid-wordle-list.txt')
-        self.over_words = _load_word_list('todays-wordle-candidate.txt')
+        self.valid_words = load_word_list('valid-wordle-list.txt')
+        self.over_words = load_word_list('todays-wordle-candidate.txt')
 
     def solve(self, wordle: Wordle):
+
+        print(list(product([LetterState.NONE, LetterState.INCLUDE, LetterState.CORRECT], repeat=5)))
+
         # valid_words = self.valid_words
         over_words = self.over_words
 
@@ -39,37 +32,20 @@ class WordleBot:
         try:
             while 1:
 
-                if guesses[-1][0] in over_words:
+                if guesses[-1][0] in over_words: # remove guessed word from it's possible answer
                     over_words.remove(guesses[-1][0])
-                # if guesses[-1][0] in valid_words:
-                #     valid_words.remove(guesses[-1][0])
 
-                over_words = self.possible_words(over_words, guesses[-1])
-                # valid_words = self.possible_words(valid_words, guesses[-1])
+                over_words = self.possible_words(over_words, guesses[-1]) # filter possible answer by checking the pattern of the earlier guess
 
                 logger.log(f'{len(over_words)} remaining:', over_words)
 
                 print()
 
-                # highest_removed_score = None
-                # highest_removed = None
-                #
-                # for word in guess_words:
-                #     score = len(self.helps_words(word, guess_words))
-                #
-                #     if highest_removed_score is None or score > highest_removed_score:
-                #
-                #         highest_removed_score = score
-                #         highest_removed = word
-                #
-                # if highest_removed is None:
-                #     raise NotImplementedError
-
                 if len(over_words) == 1:
                     wordle.guess(over_words[0])
                     assert False
 
-                _best = self.best_word(over_words, _load_word_list('todays-wordle-candidate.txt'))
+                _best = self.best_word(over_words, load_word_list('valid-wordle-list.txt'))
 
                 # print(_best)
                 guesses.append((_best, wordle.guess(_best)))
@@ -78,17 +54,19 @@ class WordleBot:
             pass
 
     def possible_words(self, possible: list[str], _guess: tuple[str, list[LetterState]]) -> list[str]:
-        # possible = possible.copy()
-        # print('possible words:', possible)
+
         out = []
+
         for word in possible:
+
             guess, state = _guess
+
             for i in range(5):
 
                 letter = word[i]
                 s = state[guess.find(letter)]
 
-                if letter in guess and s == LetterState.NONE: # als een letter in een guess zit waarvan dat fout is
+                if letter in guess and s == LetterState.NONE:
                     break
 
                 if state[i] == LetterState.INCLUDE and letter == guess[i]:
@@ -117,16 +95,20 @@ class WordleBot:
         # return
 
         for j, word in enumerate(guess_words):
-            print('\r', j, len(guess_words), end='')
+
+            # print('\r', j, len(guess_words), end='')
 
             _set = {}
 
+            # print(word)
+
+            if word == "nails":
+                print("!!")
+
             for new_state in list(product([LetterState.NONE, LetterState.INCLUDE, LetterState.CORRECT], repeat=5)):
 
-                # print(' '.join(new_state) + ANSI_RESET)
-
-                r = reverse.possible_words(over_words, new_state, word)
-                # print(ANSI_RESET + ' '.join(new_state) + " " + ANSI_RESET, word, r)
+                # r = reverse.possible_words(over_words, new_state, word)
+                r = self.possible_words(over_words, (word, new_state))
 
                 if not r:
                     continue
@@ -139,14 +121,18 @@ class WordleBot:
                 continue
             # print("set", _set)
 
+            if word == "nails":
+                print(_set)
+
             if best_rate is None or best is None:
                 logger.error("Assigning", word, _set, "because best doesnt exist")
 
-            if best_rate is None or best is None or self._better(_set, best_rate):
+            if best_rate is None or best is None or self.better2(_set, best_rate):
                 best_rate = _set
                 best = word
+                print(best, best_rate)
 
-        logger.log("best is", best_rate)
+        logger.log("best is", best_rate, best)
         return best
 
     def _rate(self, _set: dict) -> typing.Optional[int]:
@@ -159,8 +145,8 @@ class WordleBot:
         # return max(_set) - min(_set)
         return max(_set) ** 2 + len(_set)
 
-    def _better(self, a: dict, b: dict):  # a > b
-        return len(a.values()) > len(b.values())
+    def better(self, a: dict, b: dict):  # a > b
+        # return len(a.values()) > len(b.values())
 
         maxa = max(a.values())
         suma = sum(a.values())
@@ -175,9 +161,17 @@ class WordleBot:
         else:
             return False
 
+    def better2(self, a: dict, b: dict):
+        return max(a.keys()) < max(b.keys())
+
+
 
 if __name__ == '__main__':
-    wordle = Wordle('ether')
+    # fuzzy
+
+    wordle = Wordle("paint")
+
     bot = WordleBot()
     bot.solve(wordle)
     # bot.helps_words(wordle._correct, bot.guess_words)
+
