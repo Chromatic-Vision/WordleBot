@@ -44,6 +44,9 @@ class WordleBot:
                 if len(over_words) <= 2:
                     wordle.guess(over_words[0])
 
+                if len(over_words) <= 2:
+                    wordle.guess(over_words[0])
+
                 _best = self.best_word(over_words, valid_guess_words)
 
                 # print(_best)
