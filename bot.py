@@ -1,8 +1,6 @@
-import typing
 from itertools import product
 
 from wordle import Wordle, LetterState, WordleFullException, ANSI_RESET, load_word_list
-import reverse
 import logger
 
 logger = logger.Logger(True,
@@ -15,7 +13,7 @@ FIRST = 'trace'
 
 class WordleBot:
     def __init__(self):
-        self.valid_words = load_word_list('valid-wordle-list.txt')
+        self.valid_guess_words = load_word_list('valid-wordle-list.txt')
         self.over_words = load_word_list('todays-wordle-candidate.txt')
 
     def solve(self, wordle: Wordle):
@@ -24,6 +22,7 @@ class WordleBot:
 
         # valid_words = self.valid_words
         over_words = self.over_words
+        valid_guess_words = self.valid_guess_words
 
         guesses = [(FIRST, wordle.guess(FIRST))]
 
@@ -34,6 +33,7 @@ class WordleBot:
 
                 if guesses[-1][0] in over_words: # remove guessed word from it's possible answer
                     over_words.remove(guesses[-1][0])
+                    valid_guess_words.remove(guesses[-1][0])
 
                 over_words = self.possible_words(over_words, guesses[-1]) # filter possible answer by checking the pattern of the earlier guess
 
@@ -41,17 +41,26 @@ class WordleBot:
 
                 print()
 
-                if len(over_words) == 1:
+                if len(over_words) <= 2:
                     wordle.guess(over_words[0])
-                    assert False
 
-                _best = self.best_word(over_words, load_word_list('valid-wordle-list.txt'))
+                _best = self.best_word(over_words, valid_guess_words)
 
                 # print(_best)
                 guesses.append((_best, wordle.guess(_best)))
 
         except WordleFullException:
             pass
+
+    def count_letters(self, letter: str, word, state: list[LetterState]) -> int:
+
+        count = 0
+
+        for i in range(5):
+            if word[i] == letter and (state[i] == LetterState.CORRECT or state[i] == LetterState.INCLUDE):
+                count += 1
+
+        return count
 
     def possible_words(self, possible: list[str], _guess: tuple[str, list[LetterState]]) -> list[str]:
 
@@ -78,6 +87,9 @@ class WordleBot:
                 if state[i] == LetterState.CORRECT and guess[i] is not letter:
                     break
 
+                if self.count_letters(word[i], guess, state) > self.count_letters(word[i], word, [LetterState.CORRECT] * 5):
+                    break
+
             else:
                 out.append(word)
 
@@ -100,29 +112,24 @@ class WordleBot:
 
             _set = {}
 
-            # print(word)
-
-            if word == "nails":
-                print("!!")
-
             for new_state in list(product([LetterState.NONE, LetterState.INCLUDE, LetterState.CORRECT], repeat=5)):
 
-                # r = reverse.possible_words(over_words, new_state, word)
                 r = self.possible_words(over_words, (word, new_state))
 
-                if not r:
+                if not r: # if the state is impossible
                     continue
 
                 idx = len(r)
+
                 if idx not in _set:
                     _set[idx] = 0
-                _set[idx] += 1
-            if _set == {}:
-                continue
-            # print("set", _set)
 
-            if word == "nails":
-                print(_set)
+                _set[idx] += 1
+
+            if _set == {}: # if the set is impossible (?)
+                continue
+
+            _set = dict(sorted(_set.items()))
 
             if best_rate is None or best is None:
                 logger.error("Assigning", word, _set, "because best doesnt exist")
@@ -135,41 +142,24 @@ class WordleBot:
         logger.log("best is", best_rate, best)
         return best
 
-    def _rate(self, _set: dict) -> typing.Optional[int]:
-        if not _set:
-            return None
 
-        # zo groot mogelijk aantal groepen
-        # de grootste groep moet zo klein mogelijk zijn
-
-        # return max(_set) - min(_set)
-        return max(_set) ** 2 + len(_set)
-
-    def better(self, a: dict, b: dict):  # a > b
-        # return len(a.values()) > len(b.values())
-
-        maxa = max(a.values())
-        suma = sum(a.values())
-
-        maxb = max(b.values())
-        sumb = sum(b.values())
-
-        if suma > sumb:
-            return True
-        elif suma == sumb:
-            return maxa < maxb
-        else:
-            return False
 
     def better2(self, a: dict, b: dict):
-        return max(a.keys()) < max(b.keys())
+        if max(a.keys()) <= max(b.keys()):
+            if max(a.keys()) < max(b.keys()):
+                return True
+            else:
+                return sum(a.values()) > sum(b.values())
+
+        return False
+
 
 
 
 if __name__ == '__main__':
     # fuzzy
 
-    wordle = Wordle("paint")
+    wordle = Wordle("deter")
 
     bot = WordleBot()
     bot.solve(wordle)
