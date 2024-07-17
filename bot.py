@@ -41,10 +41,7 @@ class WordleBot:
 
                 print()
 
-                if len(over_words) <= 2:
-                    wordle.guess(over_words[0])
-
-                if len(over_words) <= 2:
+                while len(over_words) <= 2:
                     wordle.guess(over_words[0])
 
                 _best = self.best_word(over_words, valid_guess_words)
@@ -162,7 +159,7 @@ class WordleBot:
 if __name__ == '__main__':
     # fuzzy
 
-    wordle = Wordle("deter")
+    wordle = Wordle("pollo")
 
     bot = WordleBot()
     bot.solve(wordle)
