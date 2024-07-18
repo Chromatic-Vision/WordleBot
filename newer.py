@@ -71,10 +71,13 @@ class WordleBot:
 
         optimal_words = []
         optimal_set = {}
+        optimal_bits = 0
 
         for word in valid_guesses:
 
             current_set = {}
+            current_bits = 0
+            possible_matches = 0
 
             for pattern in list(product([LetterState.NONE, LetterState.INCLUDE, LetterState.CORRECT], repeat=5)):
 
@@ -82,21 +85,39 @@ class WordleBot:
 
                 if possibles:
                     current_set[pattern] = possibles
+                    possible_matches += possibles.__len__()
+                    current_bits += ((-math.log2(possibles.__len__() / remaining.__len__())) * (possibles.__len__() / remaining.__len__()))
 
             print("\r", word, end="")
 
             if optimal_set == {}:
                 optimal_words = [word]
                 optimal_set = current_set
+                optimal_bits = current_bits
+
             else:
-                match (self.compare_dicts(current_set, optimal_set)):
-                    case 1:
-                        optimal_words = [word]
-                        optimal_set = current_set
-                    case 0:
-                        optimal_words.append(word)
-                    case -1:
-                        pass
+
+                if optimal_bits < current_bits:
+
+                    optimal_words = [word]
+                    optimal_set = current_set
+                    optimal_bits = current_bits
+
+                    print()
+                    print(current_bits)
+                    print()
+
+                elif optimal_bits == current_bits:
+                    match (self.compare_dicts(current_set, optimal_set)):
+                        case 1:
+                            optimal_words = [word]
+                            optimal_set = current_set
+                        case 0:
+                            optimal_words.append(word)
+                        case -1:
+                            pass
+                else:
+                    pass
 
         print()
         print(f"optimal is {optimal_words}")
@@ -105,9 +126,8 @@ class WordleBot:
 
     def compare_dicts(
             self,
-            a: Dict[Tuple[LetterState, ...], List[str]],
-            b: Dict[Tuple[LetterState, ...], List[str]],
-            normalization_factor: int = 14855
+            dict1: Dict[Tuple[LetterState, ...], List[str]],
+            dict2: Dict[Tuple[LetterState, ...], List[str]]
     ) -> int:
         """
         Compare two dictionaries based on the number of groups (keys) and the size of the largest group.
@@ -118,37 +138,27 @@ class WordleBot:
             - 0 if they are equal
         """
 
-        def evaluate_dict(d: Dict[Tuple[LetterState, ...], List[str]]) -> Tuple[float, int, int]:
+        def evaluate_dict(d: Dict[Tuple[LetterState, ...], List[str]]) -> Tuple[int, int]:
             num_groups = len(d)
             max_group_size = max(len(words) for words in d.values())
-            total_length_of_words = sum(len(words) for words in d.values())
-            p = total_length_of_words / normalization_factor
-            total_bits = math.log2(1 / p)
-            return (total_bits, num_groups, max_group_size)
+            return (num_groups, max_group_size)
 
-        total_bits1, num_groups1, max_group_size1 = evaluate_dict(a)
-        total_bits2, num_groups2, max_group_size2 = evaluate_dict(b)
+        num_groups1, max_group_size1 = evaluate_dict(dict1)
+        num_groups2, max_group_size2 = evaluate_dict(dict2)
 
-        # Compare based on total bits of information first
-        if total_bits1 > total_bits2:
-            print(total_bits1, total_bits2)
+        # Compare based on the number of groups first
+        if num_groups1 > num_groups2:
             return 1
-        elif total_bits1 < total_bits2:
+        elif num_groups1 < num_groups2:
             return -1
         else:
-            # If total bits of information is the same, compare based on the number of groups
-            if num_groups1 > num_groups2:
+            # If the number of groups is the same, compare based on the size of the largest group
+            if max_group_size1 < max_group_size2:
                 return 1
-            elif num_groups1 < num_groups2:
+            elif max_group_size1 > max_group_size2:
                 return -1
             else:
-                # If the number of groups is the same, compare based on the size of the largest group
-                if max_group_size1 < max_group_size2:
-                    return 1
-                elif max_group_size1 > max_group_size2:
-                    return -1
-                else:
-                    return 0
+                return 0
 
 
 
@@ -191,7 +201,7 @@ class WordleHelper:
                 if state[i] == LetterState.CORRECT and guess[i] is not letter:
                     break
 
-                if self.count_letters(word[i], guess, state) > self.count_letters(word[i], word, [LetterState.CORRECT] * 5):
+                if self.count_letters(letter, guess, state) > self.count_letters(letter, word, [LetterState.CORRECT] * 5):
                     break
 
             else:
@@ -203,7 +213,7 @@ class WordleHelper:
 
 if __name__ == "__main__":
 
-    wordle = Wordle("terse")
+    wordle = Wordle("nerdy")
 
     bot = WordleBot()
     bot.solve(wordle)
