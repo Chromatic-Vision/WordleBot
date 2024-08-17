@@ -8,7 +8,7 @@ import logger
 # ======================================================================================================================
 
 logger = logger.Logger(True,
-                       False,
+                       True,
                        "$color[$info]$reset $timecolor[%H:%M:%S.%f]$reset $message $tracecolor($filename/$funcname:$line)$reset")
 logger.reset_log()
 
@@ -19,8 +19,9 @@ class WordleBot:
     def __init__(self):
         self.valid_guesses = load_word_list('valid-wordle-list.txt')
         self.possible_answers = load_word_list('todays-wordle-candidate.txt')
+        self.valid_guesses = self.possible_answers
 
-        self.first_guess = 'crane'
+        self.first_guess = 'trace'
 
         self.helper = WordleHelper()
 
@@ -51,13 +52,8 @@ class WordleBot:
                 print()
 
                 if 0 < len(possible_answers) <= 2:
-                    game.guess(possible_answers[0])
-
-                    if 0 < len(possible_answers) <= 2:
-                        game.guess(possible_answers[0])
-
-                        if 0 < len(possible_answers) <= 2:
-                            game.guess(possible_answers[0])
+                    guesses.append((possible_answers[0], game.guess(possible_answers[0])))
+                    continue
 
                 _best = self.optimal_word(possible_answers, valid_guesses)[0]
 
@@ -88,7 +84,7 @@ class WordleBot:
                     possible_matches += possibles.__len__()
                     current_bits += ((-math.log2(possibles.__len__() / remaining.__len__())) * (possibles.__len__() / remaining.__len__()))
 
-            print("\r", word, end="")
+            # print("\r", word, end="")
 
             if optimal_set == {}:
                 optimal_words = [word]
@@ -104,7 +100,7 @@ class WordleBot:
                     optimal_bits = current_bits
 
                     print()
-                    print(current_bits)
+                    print(current_bits, word)
                     print()
 
                 elif optimal_bits == current_bits:
@@ -168,6 +164,9 @@ class WordleHelper:
         pass
 
     def count_letters(self, letter: str, word, state: list[LetterState]) -> int:
+
+        assert state.__len__() == 5, state.__len__()
+
         count = 0
 
         for i in range(5):
@@ -175,6 +174,25 @@ class WordleHelper:
                 count += 1
 
         return count
+
+    def confirmed_letter_count(self,
+                                letter: str,
+                                word,
+                                state: list[LetterState]) -> bool:
+
+        count = 0
+        confirmed = False
+
+        for i in range(5):
+            if word[i] == letter and (state[i] == LetterState.CORRECT or state[i] == LetterState.INCLUDE):
+                count += 1
+
+        if count >= 0:
+            for i in range(5):
+                if word[i] == letter and (state[i] == LetterState.NONE):
+                    confirmed = True
+
+        return confirmed
 
     def possible_words(self, possible: list[str], _guess: tuple[str, list[LetterState]]) -> list[str]:
 
@@ -187,10 +205,6 @@ class WordleHelper:
             for i in range(5):
 
                 letter = word[i]
-                s = state[guess.find(letter)]
-
-                if letter in guess and s == LetterState.NONE:
-                    break
 
                 if state[i] == LetterState.INCLUDE and letter == guess[i]:
                     break
@@ -204,6 +218,14 @@ class WordleHelper:
                 if self.count_letters(letter, guess, state) > self.count_letters(letter, word, [LetterState.CORRECT] * 5):
                     break
 
+                # als de guess REFER 2 Rs heeft betekent dat BORIS geen antwoord kan zijn
+
+                if self.confirmed_letter_count(letter, guess, state): # als je TEPEE guesst en er komt maar 2 E's geel en 3e grijs weet je dat er allen maar 2 E's zijn
+                    # logger.log("confirmed")
+                    if self.count_letters(letter, word, [LetterState.CORRECT] * 5) != self.count_letters(letter, guess, state):
+                        # logger.log("impossible", word, guess)
+                        break
+
             else:
                 out.append(word)
 
@@ -213,7 +235,8 @@ class WordleHelper:
 
 if __name__ == "__main__":
 
-    wordle = Wordle("nerdy")
+    wordle = Wordle("storm")
 
     bot = WordleBot()
     bot.solve(wordle)
+    # print(WordleBot().helper.considered_letter_count("e", "tepee", [LetterState.NONE, LetterState.CORRECT, LetterState.NONE, LetterState.NONE, LetterState.NONE]))
