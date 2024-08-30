@@ -1,7 +1,7 @@
 from time import time
 
 from wordle import Wordle
-from bot import WordleBot
+from tree import WordleBot
 
 SCORE_MAX = 20
 
