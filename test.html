@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Wordle optimal second word list</title>
+    <style>
+         @font-face {
+             font-family: franklin;
+             src: url(franklin-normal-600.woff2);
+         }
+
+        * {
+            background: #121213;
+            color: white;
+
+            font-family: franklin,sans-serif;
+            font-weight: 700;
+            font-size: 32px;
+        }
+
+         .word-group {
+             display: grid;
+             /*grid-template-rows: repeat(2, 1fr);*/
+             grid-gap: 5px;
+
+             padding: 10px;
+         }
+        .word {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-gap: 5px;
+
+            width: 280px;
+            height: 52px;
+        }
+
+        .letter {
+            justify-content: center;
+            align-content: center;
+
+            background: #929292;
+
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .letter-none {
+            background: #121213;
+            border: 2px solid #3a3a3c;
+        }
+        .letter-black {
+            background: #3a3a3c;
+        }
+        .letter-yellow {
+            background: #b59f3b;
+        }
+        .letter-green {
+            background: #538d4e;
+        }
+    </style>
+</head>
+<body>
+<!--<div class="word-group">-->
+<!--    <div class="word">-->
+<!--        <div class="letter letter-green">A</div>-->
+<!--        <div class="letter letter-yellow">a</div>-->
+<!--        <div class="letter letter-black">A</div>-->
+<!--        <div class="letter letter-green">A</div>-->
+<!--        <div class="letter letter-green">A</div>-->
+<!--    </div>-->
+
+<!--    <div class="word">-->
+<!--        <div class="letter letter-none">A</div>-->
+<!--        <div class="letter letter-none">a</div>-->
+<!--        <div class="letter letter-none">A</div>-->
+<!--        <div class="letter letter-none">A</div>-->
+<!--        <div class="letter letter-none">A</div>-->
+<!--    </div>-->
+<!--</div>-->
+
+{{BODY}}
+</body>
+</html>
