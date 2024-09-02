@@ -42,7 +42,7 @@ def sort_func(content) -> int:
 
 contents = []
 body = io.StringIO()
-with open('tarse.tree', 'r', encoding='ascii') as tree:
+with open('tarse.tree', 'r', encoding='ascii', newline='\n') as tree:
     word = tree.read(6)[:-1]
     # ⚠️ ⚠️ WARNING bad code alert! ⚠️ ⚠️
     while len(line := tree.readline()) == 16:

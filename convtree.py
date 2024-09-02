@@ -116,5 +116,5 @@ def write(tree: Node, file) -> int:
     return ret
 
 
-with open('tarse.tree', 'w') as file:
+with open('tarse.tree', 'w', encoding='ascii', newline='\n') as file:
     write(tree, file)
