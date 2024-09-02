@@ -2,6 +2,7 @@ import io
 
 
 def word_group(start_word: str, state: str, followup_word: str) -> str:
+
     colour = {
         'B': 'black',
         'Y': 'yellow',
@@ -54,16 +55,49 @@ with open('tarse.tree', 'r', encoding='ascii', newline='\n') as tree:
         tree.seek(index)
 
 contents.sort(key=sort_func)
+
+
+def countcases(): # this code is made at 8 pm
+
+    cases = []
+    curlen = 0
+
+    v = 0
+
+    for ct in contents:
+
+        b = sort_func(ct) >> 10
+
+        try:
+            _ = contents[contents.index(ct) + 1]
+        except IndexError:
+            cases.append(curlen + 1)
+            break
+
+        if b != v:
+            v = b
+            cases.append(curlen)
+            curlen = 0
+
+        curlen += 1
+
+    return cases
+
+cases = countcases()
+
 # print([c[1] for c in contents])
 l = None
 # body.write('<div>')
 for content in contents:
+
     n = sort_func(content) >> 10
+
     if n != l:
         if l is not None:
             body.write('</div>')
         body.write('<div class=columns>')
-        body.write(f'<h1>Case: LC{n}</h1>\n')
+        body.write(f'<h2>LC{n} ({cases[n]} {"cases" if cases[n] > 1 else "case"})</h2>\n')
+
     l = n
 
     body.write(word_group(*content))
