@@ -55,7 +55,17 @@ with open('tarse.tree', 'r', encoding='ascii', newline='\n') as tree:
 
 contents.sort(key=sort_func)
 # print([c[1] for c in contents])
+l = None
+# body.write('<div>')
 for content in contents:
+    n = sort_func(content) >> 10
+    if n != l:
+        if l is not None:
+            body.write('</div>')
+        body.write('<div class=columns>')
+        body.write(f'<h1>Case: LC{n}</h1>\n')
+    l = n
+
     body.write(word_group(*content))
 
 with open('out.html', 'w') as file:
