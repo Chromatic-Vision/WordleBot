@@ -19,6 +19,8 @@
             }
         })
 
+        const WORDLE_VALID_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
         fetch('best.json').then((response) => {
             if (!response.ok) {
                 return new Promise((_, reject) => {
@@ -49,6 +51,7 @@
                     child.className = `letter ${c_to_class_name[queue[0][1][index]]}`
                     index++;
                 }
+                queue.shift();
             }
 
             function change_letter_state(_letter_state) {
@@ -68,6 +71,40 @@
                 e.addEventListener('input', () => {
                     change_letter_state(+e.value)
                     console.log('Switched to letter-case', e.value);
+                })
+
+                let letter_input = document.getElementById('letter-input');
+                // https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_animations/Using_CSS_animations#animating_display_and_content-visibility
+                letter_input.addEventListener('animationend', () => {
+                    // Assume the animation is 'wrong-answer'
+                    letter_input.classList.remove('wrong-answer');
+                });
+
+                let i = 0;
+                document.addEventListener('keydown', (event) => {
+                    if (event.key.length === 1 && event.key !== ' ' && i !== 5) {
+                        let key = event.key.toUpperCase();
+                        if (WORDLE_VALID_CHARS.includes(key)) {
+                            console.log('User typed', key);
+                        }
+
+                        letter_input.children[i].innerText = key;
+
+                        i++;
+                    } else if (event.key === 'Backspace') {
+                        console.log('User pressed Backspace');
+                        if (i === 5) i--;
+                        letter_input.children[i].innerText = '';
+                        if (i !== 0) {
+                            i--;
+                        }
+                    } else if (event.key === 'Enter') {
+                        if (i !== 5 || !next()) {
+                            letter_input.classList.add('wrong-answer');
+                        }
+                        console.log('User tried to submit');
+                    }
+                    // console.log(event);
                 })
             })
 
@@ -144,6 +181,29 @@
         .letter-green {
             background: #538d4e;
         }
+
+
+        .wrong-answer {
+            animation: wrong-answer 0.4s;
+        }
+
+        @keyframes wrong-answer {
+            from {
+                transform: translateX(0%);
+            }
+
+            33% {
+                transform: translateX(10%);
+            }
+
+            66% {
+                transform: translateX(-10%);
+            }
+
+            to {
+                transform: translateX(0%);
+            }
+        }
     </style>
 </head>
 <body>
@@ -166,7 +226,7 @@
             <div class="letter letter-black"></div>
         </div>
 
-        <div class="word">
+        <div class="word" id="letter-input">
             <div class="letter letter-none"></div>
             <div class="letter letter-none"></div>
             <div class="letter letter-none"></div>
