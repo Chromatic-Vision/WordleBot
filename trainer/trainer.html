@@ -33,11 +33,11 @@
             let letter_state = null;
 
             function next() {
-                if (queue.length === 0) {
+                while (queue.length <= 2) {
                     queue.push(json[letter_state][Math.floor(Math.random() * json[letter_state].length)])
                 }
 
-                let out = false;
+                let out = null;
                 {
                     let submission = document.getElementById('letter-input')
                         .innerText
@@ -46,7 +46,13 @@
                     console.log('submission:', submission, 'correct value:', queue[0][2]);
                     if (submission === queue[0][2]) {
                         out = true;
+                    } else if (submission.length === 5) {
+                        out = false;
                     }
+                }
+
+                if (out === true) {
+                    queue.shift();
                 }
 
                 let word_group = document.getElementsByClassName('word-group')[0];
@@ -63,15 +69,20 @@
                     child.className = `letter ${c_to_class_name[queue[0][1][index]]}`
                     index++;
                 }
-                if (out) {
-                    queue.shift();
-
+                if (out === true) {
                     let letter_input = document.getElementById('letter-input')
                     for (let i = 0; i < 5; i++) {
                         letter_input.children[i].innerText = '';
                     }
+                } else if (out === false) {
+                    let letter_input = document.getElementById('letter-input')
+                    for (let i = 0; i < 5; i++) {
+                        letter_input.children[i].innerText = queue[0][2][i];
+                    }
+
+                    queue.push(queue[0]);
                 }
-                return out;
+                return out !== null && out !== false;
             }
 
             function change_letter_state(_letter_state) {
