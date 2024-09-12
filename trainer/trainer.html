@@ -37,6 +37,18 @@
                     queue.push(json[letter_state][Math.floor(Math.random() * json[letter_state].length)])
                 }
 
+                let out = false;
+                {
+                    let submission = document.getElementById('letter-input')
+                        .innerText
+                        .replaceAll('\n', '')
+                        .toLowerCase();
+                    console.log('submission:', submission, 'correct value:', queue[0][2]);
+                    if (submission === queue[0][2]) {
+                        out = true;
+                    }
+                }
+
                 let word_group = document.getElementsByClassName('word-group')[0];
                 console.log('next', word_group, letter_state);
                 var index = 0;
@@ -51,7 +63,15 @@
                     child.className = `letter ${c_to_class_name[queue[0][1][index]]}`
                     index++;
                 }
-                queue.shift();
+                if (out) {
+                    queue.shift();
+
+                    let letter_input = document.getElementById('letter-input')
+                    for (let i = 0; i < 5; i++) {
+                        letter_input.children[i].innerText = '';
+                    }
+                }
+                return out;
             }
 
             function change_letter_state(_letter_state) {
@@ -93,14 +113,17 @@
                         i++;
                     } else if (event.key === 'Backspace') {
                         console.log('User pressed Backspace');
-                        if (i === 5) i--;
-                        letter_input.children[i].innerText = '';
+                        // if (i === 5) i--;
                         if (i !== 0) {
                             i--;
                         }
+                        letter_input.children[i].innerText = '';
                     } else if (event.key === 'Enter') {
                         if (i !== 5 || !next()) {
                             letter_input.classList.add('wrong-answer');
+                        } else {
+                            // Right answer
+                            i = 0;
                         }
                         console.log('User tried to submit');
                     }
