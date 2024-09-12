@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Wordle second word trainer</title>
+
+    <script>
+        function content_loaded(func) {
+            if (document.readyState === "loading") {
+                document.addEventListener("DOMContentLoaded", func);
+            } else {
+                func();
+            }
+        }
+
+        content_loaded(() => {
+            let e = document.getElementById('letter-count');
+            for (let i = 1; i <= 5; i++) {
+                e.innerHTML += `<option value=${i}>${i}</option>`;
+            }
+        })
+
+        fetch('best.json').then((response) => {
+            if (!response.ok) {
+                return new Promise((_, reject) => {
+                    reject(new Error('error getting best.json'));
+                });
+            }
+            return response.json();
+        }).then((json) => {
+            let queue = []
+            let letter_state = null;
+
+            function next() {
+                if (queue.length === 0) {
+                    queue.push(json[letter_state][Math.floor(Math.random() * json[letter_state].length)])
+                }
+
+                let word_group = document.getElementsByClassName('word-group')[0];
+                console.log('next', word_group, letter_state);
+                var index = 0;
+                for (const child of word_group.children[0].children) {
+                    child.innerText = queue[0][0][index];
+
+                    const c_to_class_name = {
+                        'B': 'letter-black',
+                        'Y': 'letter-yellow',
+                        'G': 'letter-green'
+                    }
+                    child.className = `letter ${c_to_class_name[queue[0][1][index]]}`
+                    index++;
+                }
+            }
+
+            function change_letter_state(_letter_state) {
+                letter_state = _letter_state
+                queue = [];
+
+                next();
+                console.log('change_letter_state got called');
+            }
+            change_letter_state(0);
+
+            return ({change_letter_state, next});
+        }).then((obj) => {
+            let {change_letter_state, next} = obj;
+            content_loaded(() => {
+                let e = document.getElementById('letter-count');
+                e.addEventListener('input', () => {
+                    change_letter_state(+e.value)
+                    console.log('Switched to letter-case', e.value);
+                })
+            })
+
+            // TODO: accept input and call next()
+        }).catch((error) => {
+            document.getElementById('error')
+                .innerText += error.message + '\n';
+            console.error(error.message);
+        });
+    </script>
+
+    <style>
+        @font-face {
+            font-family: franklin;
+            src: url(franklin-normal-700.woff2);
+        }
+
+        * {
+            background: #121213;
+            color: white;
+
+            font-family: franklin,sans-serif;
+            font-weight: 700;
+            font-size: 32px;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+        }
+
+        .word-group {
+            display: grid;
+            /*grid-template-rows: repeat(2, 1fr);*/
+            grid-gap: 5px;
+
+            padding: 10px;
+
+            border-radius: 50%;
+        }
+
+        .word {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-gap: 5px;
+
+            width: 280px;
+            height: 52px;
+        }
+
+        .letter {
+            justify-content: center;
+            align-content: center;
+
+            background: #929292;
+
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .letter-none {
+            background: #121213;
+            border: 2px solid #3a3a3c;
+        }
+
+        .letter-black {
+            background: #3a3a3c;
+        }
+
+        .letter-yellow {
+            background: #b59f3b;
+        }
+
+        .letter-green {
+            background: #538d4e;
+        }
+    </style>
+</head>
+<body>
+
+<h1 id="error" style="color: red"></h1>
+
+<label for="letter-count">Letter count:</label>
+<select name="letter-count" id="letter-count">
+</select>
+
+<br>
+
+<div class="container">
+    <div class="word-group">
+        <div class="word">
+            <div class="letter letter-black"></div>
+            <div class="letter letter-black"></div>
+            <div class="letter letter-black"></div>
+            <div class="letter letter-black"></div>
+            <div class="letter letter-black"></div>
+        </div>
+
+        <div class="word">
+            <div class="letter letter-none"></div>
+            <div class="letter letter-none"></div>
+            <div class="letter letter-none"></div>
+            <div class="letter letter-none"></div>
+            <div class="letter letter-none"></div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
