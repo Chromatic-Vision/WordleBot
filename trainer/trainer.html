@@ -19,7 +19,7 @@
             }
         })
 
-        const WORDLE_VALID_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const WORDLE_VALID_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
         fetch('best.json').then((response) => {
             if (!response.ok) {
@@ -111,17 +111,30 @@
                     letter_input.classList.remove('wrong-answer');
                 });
 
+                for (var k = 0; k < letter_input.children.length; k++) { // remove animation for letter grid
+
+                    let letter_grid = letter_input.children[k];
+
+                    letter_grid.addEventListener('animationend', () => {
+                        letter_grid.classList.remove('on-char');
+                    });
+                }
+
                 let i = 0;
                 document.addEventListener('keydown', (event) => {
                     if (event.key.length === 1 && event.key !== ' ' && i !== 5) {
                         let key = event.key.toUpperCase();
+                        console.log(key);
+
                         if (WORDLE_VALID_CHARS.includes(key)) {
                             console.log('User typed', key);
+
+                            letter_input.children[i].innerText = key;
+                            letter_input.children[i].classList.add('on-char')
+
+                            i++;
                         }
 
-                        letter_input.children[i].innerText = key;
-
-                        i++;
                     } else if (event.key === 'Backspace') {
                         console.log('User pressed Backspace');
                         // if (i === 5) i--;
@@ -218,24 +231,40 @@
 
 
         .wrong-answer {
-            animation: wrong-answer 0.4s;
+            animation: wrong-answer 0.6s;
+        }
+
+        .on-char {
+            animation: on-char 0.1s;
         }
 
         @keyframes wrong-answer {
+            10%, 90% {
+                transform: translateX(-1px)
+            }
+
+            20%, 80% {
+                transform: translateX(2px)
+            }
+
+            30%, 50%, 70% {
+                transform: translateX(-4px)
+            }
+
+            40%, 60% {
+                transform: translateX(4px)
+            }
+        }
+
+        @keyframes on-char {
             from {
-                transform: translateX(0%);
+                transform: scale(0.8);
+                opacity: 0
             }
 
-            33% {
-                transform: translateX(10%);
-            }
-
-            66% {
-                transform: translateX(-10%);
-            }
-
-            to {
-                transform: translateX(0%);
+            40% {
+                transform: scale(1.1);
+                opacity: 1
             }
         }
     </style>
