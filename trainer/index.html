@@ -14,7 +14,7 @@
 
         content_loaded(() => {
             let e = document.getElementById('letter-count');
-            for (let i = 1; i <= 5; i++) {
+            for (let i = 0; i <= 5; i++) {
                 e.innerHTML += `<option value=${i}>${i}</option>`;
             }
         })
@@ -137,11 +137,19 @@
 
                     } else if (event.key === 'Backspace') {
                         console.log('User pressed Backspace');
-                        // if (i === 5) i--;
-                        if (i !== 0) {
-                            i--;
+
+                        if (event.ctrlKey) {
+                            i = 0;
+
+                            for (let k = 0; k < 5; k++) {
+                                letter_input.children[k].innerText = '';
+                            }
+                        } else {
+                            if (i !== 0) {
+                                i--;
+                            }
+                            letter_input.children[i].innerText = '';
                         }
-                        letter_input.children[i].innerText = '';
                     } else if (event.key === 'Enter') {
                         if (i !== 5 || !next()) {
                             letter_input.classList.add('wrong-answer');
